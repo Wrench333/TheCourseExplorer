@@ -32,38 +32,69 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   String query = '';
-  Course? course;
   CourseAPI courseAPI = CourseAPI();
   final controller = TextEditingController();
-  List<String>? suggestions = [];
+  List<Course> suggestions = [];
+  List<Course> courses = [];
+
+  List<String> course = [];
+  Set<String> departments = {'Select Branch'};
+  Set<String> years = {'Select Year'};
+  bool isLoading = true;
+
+  String selectedDepartment = '';
+  String selectedYear = '';
 
   @override
   void initState() {
     super.initState();
     _fetchCourses();
-    suggestions = course?.courseName;
   }
 
   Future<void> _fetchCourses() async {
     try {
-      var result = await courseAPI.getCourses();
-      print('Course List API Response: $result');
+      for (int i = 0; i < 21; i++) {
+        var result = await courseAPI.getCourses(i);
+        print('Course List API Response: $result');
+        courses.add(result);
+        suggestions.add(result);
+        course.add(result.courseName);
+        departments.add(result.courseDepartment);
+        years.add(result.courseYear);
+        print(suggestions);
+      }
       setState(() {
-        course = result;
+        isLoading = false;
       });
     } catch (e) {
       print('Error in getting course list: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error in getting course list: $e'),
+        ),
+      );
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   void onQueryChanged(String query) {
     setState(() {
-      suggestions = course?.courseName.where((courseName) {
-        final lowerCaseCourseName = courseName.toLowerCase();
+      suggestions = courses.where((course) {
+        final lowerCaseCourseName = course.courseName.toLowerCase();
+        final lowerCaseCourseCode = course.courseCode.toLowerCase();
         final lowerCaseQuery = query.toLowerCase();
-        return lowerCaseCourseName.contains(lowerCaseQuery);
+        final matchesQuery = lowerCaseCourseName.contains(lowerCaseQuery) ||
+            lowerCaseCourseCode.contains(lowerCaseQuery);
+        final matchesDepartment = (selectedDepartment == '' ||
+            course.courseDepartment == selectedDepartment);
+        final matchesYear =
+            (selectedYear == '' || course.courseYear == selectedYear);
+        return matchesQuery && matchesDepartment && matchesYear;
       }).toList();
     });
+    print(suggestions);
   }
 
   @override
@@ -119,6 +150,9 @@ class _HomeState extends State<Home> {
                           ],
                         ),
                       ),
+                      SizedBox(
+                        height: 10.0,
+                      ),
                     ],
                   ),
                   SizedBox(
@@ -128,11 +162,14 @@ class _HomeState extends State<Home> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
+                      SizedBox(
+                        height: 70.0,
+                      ),
                       Container(
                         height: 65.5,
                         width: 28,
                         decoration: BoxDecoration(
-                          color: Colors.red,
+                          color: Colors.green,
                           //Color.fromRGBO(25, 25, 112, 1.0),
                           borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(91.5),
@@ -268,26 +305,38 @@ class _HomeState extends State<Home> {
                           ),
                           child: Center(
                             child: DropdownButton<String>(
+                              isExpanded: true,
                               underline: const SizedBox(
                                 height: 0,
                               ),
                               isDense: true,
                               dropdownColor:
                                   const Color.fromRGBO(65, 105, 225, 1),
-                              hint: const Text(
+                              hint: Text(
                                 " Select Branch",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 15,
                                 ),
                               ),
-                              onChanged: (value) {},
-                              items: course?.courseDepartment.map((courseDepartment) {
+                              value: selectedDepartment,
+                              onChanged: (value) {
+                                print('$value');
+                                setState(() {
+                                  selectedDepartment = value!;
+                                });
+                              },
+                              items: departments.map((departments) {
                                 return DropdownMenuItem<String>(
-                                  value: courseDepartment,
-                                  child: Text(
-                                    courseDepartment,
-                                    style: const TextStyle(color: Colors.white),
+                                  value: departments == 'Select Branch'
+                                      ? ''
+                                      : departments,
+                                  child: Center(
+                                    child: Text(
+                                      '   $departments',
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    ),
                                   ),
                                 );
                               }).toList(),
@@ -316,6 +365,7 @@ class _HomeState extends State<Home> {
                           ),
                           child: Center(
                             child: DropdownButton<String>(
+                              isExpanded: true,
                               underline: const SizedBox(
                                 height: 0,
                               ),
@@ -329,13 +379,22 @@ class _HomeState extends State<Home> {
                                   fontSize: 15,
                                 ),
                               ),
-                              onChanged: (value) {},
-                              items: course?.courseYear.map((courseYear) {
+                              value: selectedYear,
+                              onChanged: (value) {
+                                print('$value');
+                                setState(() {
+                                  selectedYear = value!;
+                                });
+                              },
+                              items: years.map((years) {
                                 return DropdownMenuItem<String>(
-                                  value: courseYear,
-                                  child: Text(
-                                    courseYear,
-                                    style: const TextStyle(color: Colors.white),
+                                  value: years == 'Select Year' ? '' : years,
+                                  child: Center(
+                                    child: Text(
+                                      '   $years',
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    ),
                                   ),
                                 );
                               }).toList(),
@@ -349,88 +408,104 @@ class _HomeState extends State<Home> {
                 const SizedBox(
                   height: 10.0,
                 ),
-                Expanded(
-                  child: Container(
-                    color: Colors.transparent,
-                    padding: const EdgeInsets.fromLTRB(13.0, 0.0, 13.0, 0.0),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: suggestions?.length ?? 0,
-                      //TODO: Make this dynamic
-                      itemBuilder: (context, index) {
-                        if (suggestions!.contains(course?.courseName[index] ?? false)) {
-                          return Column(
-                            children: [
-                              Container(
-                                margin: const EdgeInsets.all(8.0),
-                                height: 105,
-                                padding:
-                                    const EdgeInsets.fromLTRB(23, 18, 8, 18),
-                                decoration: BoxDecoration(
-                                  color:
-                                      const Color.fromRGBO(52, 152, 219, 0.8),
-                                  borderRadius: BorderRadius.circular(17.36),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      blurRadius: 4,
-                                      color: Color.fromRGBO(0, 0, 0, 1),
-                                      offset: Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                isLoading
+                    ? Expanded(
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.grey),
+                          ),
+                        ),
+                      )
+                    : Expanded(
+                        child: Container(
+                          color: Colors.transparent,
+                          padding:
+                              const EdgeInsets.fromLTRB(13.0, 0.0, 13.0, 0.0),
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: suggestions.length ?? 0,
+                            //TODO: Make this dynamic
+                            itemBuilder: (context, index) {
+                              final course = courses[index];
+                              if (suggestions.contains(course)) {
+                                return Column(
                                   children: [
-                                    Text(
-                                      '${course?.courseName[index]}',
-                                      style: const TextStyle(
-                                          fontSize: 18.0,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Course Code: ${course?.courseCode[index]}',
-                                          style: const TextStyle(
-                                              color: Colors.white),
-                                        ),
-                                        Text(
-                                          '${course?.courseYear[index]} Year',
-                                          style: const TextStyle(
-                                              color: Colors.white),
-                                        ),
-                                        const SizedBox(
-                                          width: 12.0,
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      '${course?.courseDepartment[index]} Department',
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                    Container(
+                                      margin: const EdgeInsets.all(8.0),
+                                      height: 105,
+                                      padding: const EdgeInsets.fromLTRB(
+                                          23, 18, 8, 18),
+                                      decoration: BoxDecoration(
+                                        color: const Color.fromRGBO(
+                                            52, 152, 219, 0.8),
+                                        borderRadius:
+                                            BorderRadius.circular(17.36),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            blurRadius: 4,
+                                            color: Color.fromRGBO(0, 0, 0, 1),
+                                            offset: Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${course.courseName}',
+                                            style: const TextStyle(
+                                              fontSize: 18.0,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                'Course Code: ${course.courseCode}',
+                                                style: const TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                              Text(
+                                                '${course.courseYear} Year',
+                                                style: const TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                              const SizedBox(
+                                                width: 12.0,
+                                              ),
+                                            ],
+                                          ),
+                                          Text(
+                                            '${course.courseDepartment} Department',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
+                                    const SizedBox(
+                                      height: 15.0,
+                                    ),
                                   ],
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 15.0,
-                              ),
-                            ],
-                          );
-                        } else {
-                          return SizedBox(height: 0.0,);
-                        }
-                      },
-                    ),
-                  ),
-                ),
+                                );
+                              } else {
+                                return SizedBox(
+                                  height: 0.0,
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      ),
               ],
             ),
           ],

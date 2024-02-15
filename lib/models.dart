@@ -1,8 +1,8 @@
 class Course {
-  List<String> courseDepartment;
-  List<String> courseYear;
-  List<String> courseCode;
-  List<String> courseName;
+  String courseDepartment;
+  String courseYear;
+  String courseCode;
+  String courseName;
 
   Course({
     required this.courseDepartment,
@@ -11,23 +11,12 @@ class Course {
     required this.courseName,
   });
 
-  factory Course.fromJson(Map<String, dynamic> json) {
-    List<String> courseDepartment = [];
-    List<String> courseYear = [];
-    List<String> courseCode = [];
-    List<String> courseName = [];
-
-    for (int i = 0; i < 21;i++){
-      courseDepartment.add(json['courses'][i]['department']);
-      courseYear.add(json['courses'][i]['year']);
-      courseCode.add(json['courses'][i]['courseCode']);
-      courseName.add(json['courses'][i]['courseName']);
-    }
+  factory Course.fromJson(Map<String, dynamic> json,int i) {
     return Course(
-      courseDepartment:courseDepartment ,
-      courseYear: courseYear,
-      courseCode: courseCode,
-      courseName: courseName,
+      courseDepartment:json['courses'][i]['department'] ,
+      courseYear: json['courses'][i]['year'],
+      courseCode: json['courses'][i]['courseCode'],
+      courseName: json['courses'][i]['courseName'],
     );
   }
 }
