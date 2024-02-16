@@ -448,64 +448,67 @@ class _HomeState extends State<Home> {
                                 if (suggestions.contains(course)) {
                                   return Column(
                                     children: [
-                                      Container(
-                                        margin: const EdgeInsets.all(8.0),
-                                        height: 105,
-                                        padding: const EdgeInsets.fromLTRB(
-                                            23, 18, 8, 18),
-                                        decoration: BoxDecoration(
-                                          color: const Color.fromRGBO(
-                                              52, 152, 219, 0.8),
-                                          borderRadius:
-                                              BorderRadius.circular(17.36),
-                                          boxShadow: const [
-                                            BoxShadow(
-                                              blurRadius: 4,
-                                              color: Color.fromRGBO(0, 0, 0, 1),
-                                              offset: Offset(0, 4),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              '${course.courseName}',
-                                              style: const TextStyle(
-                                                fontSize: 18.0,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
+                                      Opacity(
+                                        opacity: 1.0, //Supposed to be 0.60 acc to figma file but didnt look right
+                                        child: Container(
+                                          margin: const EdgeInsets.all(8.0),
+                                          height: 105,
+                                          padding: const EdgeInsets.fromLTRB(
+                                              23, 18, 8, 18),
+                                          decoration: BoxDecoration(
+                                            color: const Color.fromRGBO(
+                                                52, 152, 219, 0.8),
+                                            borderRadius:
+                                                BorderRadius.circular(17.36),
+                                            boxShadow: const [
+                                              BoxShadow(
+                                                blurRadius: 4,
+                                                color: Color.fromRGBO(0, 0, 0, 1),
+                                                offset: Offset(0, 4),
                                               ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Text(
-                                                  'Course Code: ${course.courseCode}',
-                                                  style: const TextStyle(
-                                                      color: Colors.white),
+                                            ],
+                                          ),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '${course.courseName}',
+                                                style: const TextStyle(
+                                                  fontSize: 18.0,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
-                                                Text(
-                                                  '${course.courseYear} Year',
-                                                  style: const TextStyle(
-                                                      color: Colors.white),
-                                                ),
-                                                const SizedBox(
-                                                  width: 12.0,
-                                                ),
-                                              ],
-                                            ),
-                                            Text(
-                                              '${course.courseDepartment} Department',
-                                              style: const TextStyle(
-                                                color: Colors.white,
                                               ),
-                                            ),
-                                          ],
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    'Course Code: ${course.courseCode}',
+                                                    style: const TextStyle(
+                                                        color: Colors.white),
+                                                  ),
+                                                  Text(
+                                                    '${course.courseYear} Year',
+                                                    style: const TextStyle(
+                                                        color: Colors.white),
+                                                  ),
+                                                  const SizedBox(
+                                                    width: 12.0,
+                                                  ),
+                                                ],
+                                              ),
+                                              Text(
+                                                '${course.courseDepartment} Department',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(
