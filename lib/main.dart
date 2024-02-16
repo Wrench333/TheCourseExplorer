@@ -83,8 +83,6 @@ class _HomeState extends State<Home> {
     if (query == '' || query == null) {
       setState(() {
         suggestions = courses.where((course) {
-          final lowerCaseCourseName = course.courseName.toLowerCase();
-          final lowerCaseCourseCode = course.courseCode.toLowerCase();
           final matchesDepartment = (selectedDepartment == '' ||
               course.courseDepartment == selectedDepartment);
           final matchesYear =
@@ -116,6 +114,7 @@ class _HomeState extends State<Home> {
     Size size = MediaQuery.of(context).size;
     return SafeArea(
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: const Color.fromRGBO(0, 31, 63, 1),
         body: Stack(
           children: [
